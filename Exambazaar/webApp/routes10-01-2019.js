@@ -15,12 +15,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 mongoose.connect(url, { useNewUrlParser: true });
 
+//Ques1. How many hrefs within weburls collection are of facebook?
 app.get('/facebook', function (req, res) {
     weburls.find({ "url.parseDomain.domain": "facebook" }, { href: 1 }).exec(function (err, eachOne) {
         res.json(eachOne.length);
     });
 });
 
+//Ques2. Build a route which when supplied a mobile number, tells you all the hrefs where that mobile number was found.
 app.get('/mob/:mobile', function (req, res) {
     var mobile1 = req.params.mobile;
     weburls.find({ "mobile": mobile1 }, { href: 1, mobile: 1 }).exec(function (err, eachOne) {
@@ -29,13 +31,17 @@ app.get('/mob/:mobile', function (req, res) {
 });
 
 
-// app.get('/email',function(req,res){
-//     var pattern=/^[a-z\_\.]+(@)[a-z]+\.[a-z]{2,3}$/;
-//    const q1=weburls.find({email: {$regex : pattern }},{href:1 , email:1}).exec(function(err,item){
-//             res.json(item.length);
-//     });
-// });
+//Ques3. Build a route which tells the count of all hrefs with atleast one valid mobile number
+app.get('/email1',function(req,res){
+    var pattern=/^[a-z\_\.]+(@)[a-z]+\.[a-z]{2,3}$/;
+   const q1=weburls.find({email: {$regex : pattern }},{href:1 , email:1}).exec(function(err,item){
+            res.json(item.length);
+    });
+});
 
+//Ques3. Build a route which tells the count of all hrefs with atleast one valid email
+
+//function to match your Email pattern
 function validEmail(thisEmail){
     var isMatch = thisEmail.match(/^[a-z0-9\_\.]+(@)[a-z0-9\-]+\.[a-z]{2,3}$/)
     if(isMatch){
@@ -48,31 +54,34 @@ function validEmail(thisEmail){
 app.get('/email', function (req, res) {
     console.log("Counting HREFs with atleast one valid email!");
     var countHREFwithValidEmail = 0;
+
+    //array of all weburl
     var allWebURLS = weburls.find({ $where: "this.email.length > 0" }, { email: 1 }).exec(function (err, allWebURLS) {
-       // console.log(allWebURLS);
-       // console.log(allWebURLS.length);
-        //array of all weburl
+       
         if(err){
             res.json("Mongodb Error!!");
         }else{
             if(allWebURLS && allWebURLS.length > 0)
             {
-                allWebURLS.forEach(function(thisURL, uindex) 
+                allWebURLS.forEach(function(thisURL, uindex) //would check for each array of all webURLs
                 { 
                     var atleastOneValidEmail = false;
                     var thisEmailArr = thisURL.email; //array of email
-                   //console.log(thisEmailArr);
+    
                     //console.log(thisEmailArr.length);//count of all emails
                     if(thisEmailArr && thisEmailArr.length > 0)
                     {
-                        thisEmailArr.forEach(function(thisEmail, eindex) 
+                        thisEmailArr.forEach(function(thisEmail, eindex) //would check for each array of email
                         { 
+                            //would iterate for each email Array
                             console.log(thisEmail);
-                            if(validEmail(thisEmail))
+                            if(validEmail(thisEmail))//call the function validEmail
+                            //if atleast one valid email would be true, it would mark atleastOneValidEmail to be true.
                             {
                                 atleastOneValidEmail = true;
                             }
                         });
+                        //if atleastOneValidEmail is true, increase the href as one
                         if(atleastOneValidEmail)
                         {
                             countHREFwithValidEmail += 1;
@@ -81,6 +90,7 @@ app.get('/email', function (req, res) {
                     } 
                 });
                 console.log(countHREFwithValidEmail);
+                //renders the response 
                 res.json(countHREFwithValidEmail);
             }else{
                 res.json("Mongodb Error!! Found not weburls");
@@ -92,8 +102,12 @@ app.get('/email', function (req, res) {
     });
 
 });
+
+//Ques4.  Build a route which tells the count of all hrefs with atleast one valid mobile number
+
+//function to match your mobile number
 function validMobile(thisMobile){
-    var isMatch = thisMobile.match(/^[0-9]{10}$/)
+    var isMatch = thisMobile.match(/^([6-9]{1})([0-9]{9})$/)  
     if(isMatch)
     {
         return true;
@@ -108,9 +122,10 @@ app.get('/mobile', function (req, res) {
     console.log("Counting HREFs with atleast one valid mobile!");
     var countHREFwithValidMobile = 0;
     var allWebURLS = weburls.find({ $where: "this.mobile.length > 0" }, { mobile: 1 }).exec(function (err, allWebURLS) {
-       // console.log(allWebURLS);
+      //array of all weburl
+        // console.log(allWebURLS);
        // console.log(allWebURLS.length);
-        //array of all weburl
+        
         if(err){
             res.json("Mongodb Error!!");
         }else{
@@ -119,9 +134,9 @@ app.get('/mobile', function (req, res) {
                 allWebURLS.forEach(function(thisURL, uindex) 
                 { 
                     var atleastOneValidMobile = false;
-                    var thisMobileArr = thisURL.mobile; //array of email
-                   //console.log(thisEmailArr);
-                    //console.log(thisEmailArr.length);//count of all emails
+                    var thisMobileArr = thisURL.mobile; //array of mobile
+
+                    //console.log(thisMobileArr.length);//count of all mobile
                     if(thisMobileArr && thisMobileArr.length > 0)
                     {
                         thisMobileArr.forEach(function(thisMobile, eindex) 
@@ -152,99 +167,14 @@ app.get('/mobile', function (req, res) {
 
 });
 
-// app.post('/set',function(req,res)
-// {
-//     console.log("Boom");
-//     console.log("Counting HREFs with atleast one valid mobile!");
-//     var countHREFwithValidEmail = 0;
-//     const q1 = weburls.find({$where: "this.email.length>0"},{email:1}).exec(function(err,item1){
-//        // console.log(item);
-//         if(!err && item1.length>0)
-//         {   
-//             item1.forEach(function(thisURL, uindex) 
-//                 { 
-//                     var atleastOneValidEmail = false;
-//                     var thisEmailArr = thisURL.email; //array of email
-//                    //console.log(thisEmailArr);
-//                     //console.log(thisEmailArr.length);//count of all emails
-//                     if(thisEmailArr && thisEmailArr.length > 0)
-//                     {
-//                         thisEmailArr.forEach(function(thisEmail, eindex) 
-//                         { 
-//                             console.log(thisEmail);
-//                             if(validMobile(thisEmail))
-//                             {
-//                                 atleastOneValidEmail = true;
-//                             }
-//                         });
-//                         if(atleastOneValidEmail)
-//                         {
-//                             countHREFwithValidEmail += 1;
-//                         }
-                        
-//                     } 
-//                 });
-//                 console.log(countHREFwithValidEmail);
-//               //  res.json(countHREFwithValidEmail);
-
-//               console.log("Counting HREFs with atleast one valid mobile!");
-//                  var countHREFwithValidMobile = 0;
-//                 const q2= weburls.find({ $where: "this.mobile.length > 0" }, { mobile: 1 }).exec(function(err,item2)
-//                     {
-//                if(!err && item2.length > 0)
-//                  {
-//                 item2.forEach(function(thisURL, uindex) 
-//                 { 
-//                     var atleastOneValidMobile = false;
-//                     var thisMobileArr = thisURL.mobile; //array of email
-//                    //console.log(thisEmailArr);
-//                     //console.log(thisEmailArr.length);//count of all emails
-//                     if(thisMobileArr && thisMobileArr.length > 0)
-//                     {
-//                         thisMobileArr.forEach(function(thisMobile, eindex) 
-//                         { 
-//                             console.log(thisMobile);
-//                             if(validMobile(thisMobile))
-//                             {
-//                                 atleastOneValidMobile = true;
-//                             }
-//                         });
-//                         if(atleastOneValidMobile)
-//                         {
-//                             countHREFwithValidMobile += 1;
-//                         }
-                        
-//                     } 
-//                 });
-//                 console.log(countHREFwithValidMobile);
-//                // res.json(countHREFwithValidMobile);
-//                               var obj={};
-//                               obj.q1=countHREFwithValidEmail;
-//                               obj.q2=countHREFwithValidMobile;
-                              
-
-//                               res.json(obj);
-//                               console.log(obj);
-                         
-//              }
-//         });
-//     }
-//         else
-//         {
-//                     console.log("Error: " + err);
-//                     res.json({message: "Error in mongo"});
-//         }   
-//     });
-// });   
-
+//Ques5. Build a route which calculates the sum of all valid mobile numbers, all valid email addresses
 app.get('/adding', function (req, res) {
     console.log("Counting HREFs with atleast one valid mobile!");
     var countHREFwithValidMobile = 0;
     var countHREFwithValidEmail = 0;
-    var allWebURLS = weburls.find({$or: [{$where: "this.mobile.length>0"}, {$where: "this.email.length>0"}]},{_id:1}).exec(function (err, allWebURLS) {
-       // console.log(allWebURLS);
-       // console.log(allWebURLS.length);
-        //array of all weburl
+    var allWebURLS = weburls.find({$or: [{$where: "this.mobile.length>0"}, {$where: "this.email.length>0"}]},{_id:1}).exec(function (err, allWebURLS) 
+    {
+
         if(err){
             res.json("Mongodb Error!!");
         }else{
@@ -256,14 +186,11 @@ app.get('/adding', function (req, res) {
                     var atleastOneValidEmail = false;
                     var thisMobileArr = thisURL.mobile;
                     var thisEmailArr = thisURL.email;
-                     //array of email
-                   //console.log(thisEmailArr);
-                    //console.log(thisEmailArr.length);//count of all emails
+                   
                     if(thisMobileArr && thisMobileArr.length > 0)
                     {
                         thisMobileArr.forEach(function(thisMobile, eindex) 
                         { 
-                            //console.log(thisMobile);
                             if(validMobile(thisMobile))
                             {
                                 atleastOneValidMobile = true;
@@ -278,10 +205,9 @@ app.get('/adding', function (req, res) {
 
                     if(thisEmailArr && thisEmailArr.length > 0)
                     {
-                        thisEmailArr.forEach(function(thisEmail, eindex) 
+                        thisEmailArr.forEach(function(thisEmail, uindex) 
                         { 
-                            //console.log(thisMobile);
-                            if(validMobile(thisEmail))
+                            if(validEmail(thisEmail))
                             {
                                 atleastOneValidEmail = true;
                             }
@@ -291,39 +217,23 @@ app.get('/adding', function (req, res) {
                             countHREFwithValidEmail += 1;
                         }
                         
-                    } 
-                });
-                console.log(countHREFwithValidMobile);
+                    }  
+             }); 
+        
+              //console.log(countHREFwithValidMobile);
+             //  console.log(countHREFwithValidEmail);
                 var obj={};
                 obj.allWebURLS=countHREFwithValidMobile;
                 obj.allWebURLS=countHREFwithValidEmail;
                 res.json(obj);
+            
             }else{
                 res.json("Mongodb Error!! Found not weburls");
             }
-
-
-        }
+      }
         
     });
 
 });
-
-// app.get('/mobile', function (req, res) {
-    
-//     weburls.find({ mobile: { $regex: pattern } }, { href: 1, mobile: 1 }).exec(function (err, item) {
-//         res.json(item.length);
-        // for(i=0;i<item.length;i++)
-        // {
-        //     if(pattern.matches(item))
-        //         count++;
-        // }
-        // return count;
-        // var obj={};
-        // obj.q1=item.length;
-        // res.json(item);
-//     });
-// });
-
 
 app.listen(port);
