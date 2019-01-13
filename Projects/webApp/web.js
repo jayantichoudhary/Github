@@ -35,7 +35,7 @@ app.post('/weburls/report',function(req,res)
 {
     console.log("Boom");
     const q1 = weburls.find({$or: [{$where: "this.phone.length>0"}, {$where: "this.mobile.length>0"}, {$where: "this.email.length>0"}]},{_id:1}).exec(function(err,item1){
-        console.log("boom1");
+        console.log(item);
         if(!err && item1)
         {   
             const q2= weburls.find({isCrawled : false, depth : 1},{_id:1}).exec(function(err,item2){   
@@ -43,7 +43,6 @@ app.post('/weburls/report',function(req,res)
                 if(!err && item2)
                 {
                     const q3= weburls.find({isCrawled : true},{_id:1}).exec(function(err,item3){
-                        console.log("boom3");
                         if(!err && item3)
                         {
                               var obj={};
@@ -68,82 +67,73 @@ app.post('/weburls/report',function(req,res)
         }
             });    
     });
-    // var q2= weburls.findOne({isCrawled : false, depth:1}).exec(function(err,item2){
-    //     res.json(item2);
-    // });
+    
 
-    // var q3=weburls.findOne({isCrawled : true}).exec(function(err,itm){
-    //     res.json(itm);
-    // })
-    // var q2 = weburls.find({},{}).exec(function(error, q2){
-
-    // });
-    //  var q3 = weburls.find({},{}).exec(function(error, q3){
-
-    //  });
+app.get('/weburls/:domainname', function(req,res){
+        var domainname=req.params.domainname;
+    	weburls.find({domain : domainname}).then(eachOne => {
+        res.json(eachOne.length);
+        console.log(eachOne);
+    	});
+    });
 
 
-
-// app.get('/weburls/:domainname', function(req,res){
-//         var domainname=req.params.domainname;
-//     	weburls.find({domain : domainname}).then(eachOne => {
-//         res.json(eachOne.length);
-//         console.log(eachOne);
-//     	});
-//     });
-//app.use(express.static(path.join(__dirname, 'public')));
+    //app.use(express.static(path.join(__dirname, 'public')));
  
 // mongoose.Promise = global.Promise;
 // mongoose.set('useCreateIndex', true)
 
 
 
-// app.get('/dbusiness/:var1', function(req, res){
-//     //console.log('home');
-//     var var1 = req.params.var1;
+app.get('/dbusiness/:var1', function(req, res){
+    //console.log('home');
+    var var1 = req.params.var1;
     
-//     if(var1 == "2"){
-//         res.json(var1);
-//     }else{
-//         weburls.find({domain:"business"}).then(eachOne => {
-//             res.json(eachOne.length);
-//             //console.log(eachOne);
-//             });
-//     }
+    if(var1 == "2"){
+        res.json(var1);
+    }else{
+        weburls.find({domain:"business"}).then(eachOne => {
+            res.json(eachOne.length);
+            //console.log(eachOne);
+            });
+    }
     
+});
 
-	
-// });
+app.post('/thisisapostrequest', function(req, res){
+    var infoSent = req.body;
+    console.log(infoSent);
+    res.json(true);
+});
 
-// app.post('/thisisapostrequest', function(req, res){
-//     var infoSent = req.body;
-//     console.log(infoSent);
-//     res.json(true);
-// });
-// app.get('/dgt2', function(req, res){
-//     console.log('home');
-// 	weburls.find({depth: {'$gt':2}}).then(eachOne => {
-//     res.json(eachOne);
-//     console.log(eachOne);
-// 	});
-// });
-// app.get('/errort', function(req, res){
-//     console.log('home');
-// 	weburls.find({"_error":true}).then(eachOne => {
-//     res.json(eachOne);
+app.get('/dgt2', function(req, res){
+    console.log('home');
+	weburls.find({depth: {'$gt':2}}).then(eachOne => {
+    res.json(eachOne);
+    console.log(eachOne);
+	});
+});
 
+app.get('/errort', function(req, res){
+    console.log('home');
+	weburls.find({"_error":true}).then(eachOne => {
+    res.json(eachOne);
 
 
-//     console.log(eachOne);
-// 	});
-// });
-// app.get('/uph', function(req, res){
-//     console.log('home');
-// 	weburls.find({ "url.protocol": "http:"}).then(eachOne => {
-//     res.json(eachOne);
-//     console.log(eachOne);
-// 	});
-// });
+
+    console.log(eachOne);
+	});
+});
+
+app.get('/uph', function(req, res){
+    console.log('home');
+	weburls.find({ "url.protocol": "http:"}).then(eachOne => {
+    res.json(eachOne);
+    console.log(eachOne);
+	});
+});
+
+
 
 
 app.listen(port, function(){

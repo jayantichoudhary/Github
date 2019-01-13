@@ -33,7 +33,7 @@ app.get('/mob/:mobile', function (req, res) {
 
 //Ques3. Build a route which tells the count of all hrefs with atleast one valid mobile number
 app.get('/email1',function(req,res){
-    var pattern=/^[a-z\_\.]+(@)[a-z]+\.[a-z]{2,3}$/;
+    var pattern=/^[a-z0-9\_\.]{5,18}+(@)[a-z0-9\-]{5,15}+\.[a-z]{2,3}$/;
    const q1=weburls.find({email: {$regex : pattern }},{href:1 , email:1}).exec(function(err,item){
             res.json(item.length);
     });
@@ -103,7 +103,7 @@ app.get('/email', function (req, res) {
 
 });
 
-//Ques4.  Build a route which tells the count of all hrefs with atleast one valid mobile number
+//Ques4.  Build a route which tells the count of all href with atleast one valid mobile number 
 
 //function to match your mobile number
 function validMobile(thisMobile){
@@ -121,32 +121,34 @@ function validMobile(thisMobile){
 app.get('/mobile', function (req, res) {
     console.log("Counting HREFs with atleast one valid mobile!");
     var countHREFwithValidMobile = 0;
+
+    //array of all weburl
     var allWebURLS = weburls.find({ $where: "this.mobile.length > 0" }, { mobile: 1 }).exec(function (err, allWebURLS) {
-      //array of all weburl
-        // console.log(allWebURLS);
-       // console.log(allWebURLS.length);
-        
+       
         if(err){
             res.json("Mongodb Error!!");
         }else{
             if(allWebURLS && allWebURLS.length > 0)
             {
-                allWebURLS.forEach(function(thisURL, uindex) 
+                allWebURLS.forEach(function(thisURL, uindex) //would check for each array of all webURLs
                 { 
                     var atleastOneValidMobile = false;
-                    var thisMobileArr = thisURL.mobile; //array of mobile
-
-                    //console.log(thisMobileArr.length);//count of all mobile
+                    var thisMobileArr = thisURL.mobile; //array of email
+    
+                    //console.log(thisEmailArr.length);//count of all emails
                     if(thisMobileArr && thisMobileArr.length > 0)
                     {
-                        thisMobileArr.forEach(function(thisMobile, eindex) 
+                        thisMobileArr.forEach(function(thisMobile, eindex) //would check for each array of email
                         { 
+                            //would iterate for each email Array
                             console.log(thisMobile);
-                            if(validMobile(thisMobile))
+                            if(validEmail(thisMobile))//call the function validEmail
+                            //if atleast one valid email would be true, it would mark atleastOneValidEmail to be true.
                             {
                                 atleastOneValidMobile = true;
                             }
                         });
+                        //if atleastOneValidEmail is true, increase the href as one
                         if(atleastOneValidMobile)
                         {
                             countHREFwithValidMobile += 1;
@@ -155,6 +157,7 @@ app.get('/mobile', function (req, res) {
                     } 
                 });
                 console.log(countHREFwithValidMobile);
+                //renders the response 
                 res.json(countHREFwithValidMobile);
             }else{
                 res.json("Mongodb Error!! Found not weburls");
@@ -167,12 +170,16 @@ app.get('/mobile', function (req, res) {
 
 });
 
-//Ques5. Build a route which calculates the sum of all valid mobile numbers, all valid email addresses
-app.get('/adding', function (req, res) {
-    console.log("Counting HREFs with atleast one valid mobile!");
-    var countHREFwithValidMobile = 0;
-    var countHREFwithValidEmail = 0;
-    var allWebURLS = weburls.find({$or: [{$where: "this.mobile.length>0"}, {$where: "this.email.length>0"}]},{_id:1}).exec(function (err, allWebURLS) 
+
+
+
+//Ques5. Build a route which calculates the number of all valid mobile numbers and all valid email addresses
+app.get('/validMobileandEmail', function (req, res) {
+    console.log("Counting one valid mobile and one valid Email!!!!");
+    var countValidMobile = 0;
+    var countValidEmail = 0;
+   // var countHREFwithValidEmail = 0;
+    var allWebURLS = weburls.find({$or: [{$where: "this.mobile.length>0"}, {$where: "this.email.length>0"}]},{mobile:1,email:1}).exec(function (err, allWebURLS) 
     {
 
         if(err){
@@ -182,10 +189,10 @@ app.get('/adding', function (req, res) {
             {
                 allWebURLS.forEach(function(thisURL, uindex) 
                 { 
-                    var atleastOneValidMobile = false;
-                    var atleastOneValidEmail = false;
+                   // var validMobile1 = false;
+                   //var validEmail1 = false;
                     var thisMobileArr = thisURL.mobile;
-                    var thisEmailArr = thisURL.email;
+                   var thisEmailArr = thisURL.email;
                    
                     if(thisMobileArr && thisMobileArr.length > 0)
                     {
@@ -193,41 +200,39 @@ app.get('/adding', function (req, res) {
                         { 
                             if(validMobile(thisMobile))
                             {
-                                atleastOneValidMobile = true;
+                               // validMobile1 = false;
+                                countValidMobile += 1;
+                                //atleastOneValidEmail =true
                             }
                         });
-                        if(atleastOneValidMobile)
-                        {
-                            countHREFwithValidMobile += 1;
-                        }
                         
                     } 
 
                     if(thisEmailArr && thisEmailArr.length > 0)
                     {
-                        thisEmailArr.forEach(function(thisEmail, uindex) 
+                        thisEmailArr.forEach(function(thisEmail, findex) 
                         { 
                             if(validEmail(thisEmail))
                             {
-                                atleastOneValidEmail = true;
+                              // validEmail1 = true;
+                                countValidEmail += 1;
                             }
+                        
                         });
-                        if(atleastOneValidEmail)
-                        {
-                            countHREFwithValidEmail += 1;
-                        }
+                        
                         
                     }  
              }); 
         
-              //console.log(countHREFwithValidMobile);
-             //  console.log(countHREFwithValidEmail);
                 var obj={};
-                obj.allWebURLS=countHREFwithValidMobile;
-                obj.allWebURLS=countHREFwithValidEmail;
+                obj.countValidMobile=countValidMobile;
+                
+                obj.countValidEmail=countValidEmail;
                 res.json(obj);
             
-            }else{
+            }
+            else
+            {
                 res.json("Mongodb Error!! Found not weburls");
             }
       }
