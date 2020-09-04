@@ -12,7 +12,7 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "http": "0.0.0",
-    "mongodb": "^3.1.10",
+    "mongodb": "^3.1.13",
     "mongoose": "^5.4.2",
     "mongoose-deep-populate": "^3.1.1",
     "path": "^0.12.7"
