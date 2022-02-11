@@ -12,7 +12,7 @@
     "body-parser": "^1.18.3",
     "cron": "^1.6.0",
     "express": "^4.16.4",
-    "express-handlebars": "^3.0.0",
+    "express-handlebars": "^5.3.1",
     "moment-timezone": "^0.5.23",
     "mongoose": "^5.4.1",
     "mongoose-datatables": "^3.2.0",
